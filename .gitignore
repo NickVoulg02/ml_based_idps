@@ -142,6 +142,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+ids_sim/
 
 # Spyder project settings
 .spyderproject

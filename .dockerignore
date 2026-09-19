@@ -1,0 +1,23 @@
+# Virtual environments
+ids_sim/
+sensor/
+jupyter_notebooks/
+
+# Git and cache
+.git/
+.gitignore
+__pycache__/
+.ipynb_checkpoints/
+
+# Notebooks and raw data
+jupyter notebooks/
+results.csv
+flows.csv
+*.pcap
+
+# Local Docker compose files
+docker-compose.yaml
+api-deployment.yaml
+
+start_ids.sh
+README.md
