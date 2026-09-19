@@ -1,144 +1,63 @@
-# Machine Learning Models for Network Intrusion Detection: Binary and Multi-Class Classification
+# Cloud-Native Intrusion Detection and Prevention System 
 
-This repository contains implementations of various machine learning and deep learning models for binary and multi-class classification tasks. The models are trained, evaluated, and compared using metrics such as accuracy, recall, precision, F1-score, ROC AUC, and log loss. Additionally, SHAP (SHapley Additive exPlanations) is used for feature importance analysis.    
-## Dataset Used    
-The dataset used in this project is the [CSE-CIC-IDS2018 Cleaned Dataset](https://www.kaggle.com/datasets/ekkykharismadhany/csecicids2018-cleaned/data), a cleaned and preprocessed version of the CSE-CIC-IDS2018 dataset, designed for intrusion detection system (IDS) research and classification of cybersecurity attacks.    
+A distributed, machine learning-driven Network Detection and Response (NDR) architecture engineered for Kubernetes. This system leverages a highly optimized XGBoost classifier to analyze L4/L7 network telemetry in real-time, enforcing automated network isolation against volumetric and protocol-layer anomalies.
 
 ---
-## Table of Contents    
-- [Features](#features)    
-- [Models Implemented](#models-implemented)    
-- [Installation](#installation)    
-- [Usage](#usage)    
-- [Project Structure](#project-structure)    
-- [Dependencies](#dependencies)    
-- [Contributors](#contributors)
-- [License](#license)    
 
----
-## Features    
-- Binary Classification: Models to distinguish between benign and attack classes.    
-- Multi-Class Classification: Models to identify multiple types of attacks.    
-- Hyperparameter Tuning: Automated hyperparameter optimization using Optuna and GridSearchCV.    
-- Feature Importance: SHAP analysis for feature selection and interpretability.    
-- Cross-Validation: K-Fold cross-validation for model evaluation.    
-- Visualization: Confusion matrices, performance metrics, and SHAP plots for model interpretability.    
+## Threat Intelligence & Model Architecture
 
----
-## Models Implemented    
-### Binary Classification    
-- XGBoost: Gradient boosting algorithm for binary classification.    
-- MLP (Multi-Layer Perceptron): Neural network model for binary classification.    
-- Isolation Forest: Anomaly detection model adapted for binary classification.    
-### Multi-Class Classification    
-- XGBoost: Gradient boosting algorithm for multi-class classification.    
-- MLP (Multi-Layer Perceptron): Neural network model for multi-class classification.  
+The core detection engine relies on distinguishing legitimate traffic from sophisticated adversarial behaviors and resource exhaustion attacks.
 
----
-## Installation    
-1. Clone the repository:    
-```bash
-git clone https://github.com/your-username/your-repo-name.gitcd your-repo-name
-```
-2. Create and activate a virtual environment:    
-```bash
-python -m venv venvsource venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-3. Install the required packages:    
-```bash  
-pip install -r requirements.txt
-```
+* **Algorithmic Selection:** This project build upon the insights and results of [this repository](https://github.com/stamelosxp/ml_models_anomaly-based_ids). The model was trained on the `csecicids2018-cleaned` dataset. An XGBoost classifier was selected for its balance between high recall and low-latency inference on network telemetry. The model operates using a custom learning rate and a maximum depth of 4.
 
----
-## Usage  
+* **Dataset & Feature Engineering:**  To optimize real-time inference latency, highly correlated features were pruned, and SHAP analysis was utilized to eliminate the 20 least significant network flow features.
 
-### 1. Preprocessing  
-  
-Ensure the following preprocessed datasets are available in the root directory:  
-  
-- `X_train_bin.csv`, `X_test_bin.csv`  
-- `X_train_multi.csv`, `X_test_multi.csv`
-- `y_train_bin.csv`, `y_test_bin.csv`  
-- `y_train_multi.csv`, `y_test_multi.csv` 
-  
-These files are excluded from version control and must be generated or obtained separately.  
-  
-### 2. Running Models  
-
-#### Binary Classification  
-  
-- **XGBoost**:  
-  - `xgb_bin_hyper_tun.ipynb`  
-  - `xgb_bin_best.ipynb`  
-  
-- **MLP**:  
-  - `mlp_bin_hyper_tun.ipynb`  
-  - `mlp_bin_best.ipynb`  
-  
-- **Isolation Forest**:  
-  - `iso_hyper_tun.ipynb`  
-  - `iso_best.ipynb`  
-  
-#### Multi-Class Classification  
-  
-- **XGBoost**:  
-  - `xgb_multi_hyper_tun.ipynb`  
-  - `xgb_multi_best.ipynb`  
-  
-- **MLP**:  
-  - `mlp_multi_hyper_tun.ipynb`  
-  - `mlp_multi_best.ipynb`  
-  
-### 3. Results Visualization  
-  
-Use `plot_results.ipynb` to generate visual comparisons of model performance including metrics and SHAP-based feature importance plots.  
-
----
-## Project Structure  
-
-The repository is organized as follows:  
-
-- **`preprocessing.ipynb`**: Data preprocessing including cleaning, encoding, and feature selection.
-- **`xgb_bin_hyper_tun.ipynb`**: Hyperparameter tuning for XGBoost binary classification.  
-- **`xgb_bin_best.ipynb`**: Best XGBoost model for binary classification.  
-- **`mlp_bin_hyper_tun.ipynb`**: Hyperparameter tuning for MLP binary classification.  
-- **`mlp_bin_best.ipynb`**: Best MLP model for binary classification.  
-- **`iso_hyper_tun.ipynb`**: Hyperparameter tuning for Isolation Forest.  
-- **`iso_best.ipynb`**: Best Isolation Forest model for binary classification.  
-- **`xgb_multi_hyper_tun.ipynb`**: Hyperparameter tuning for XGBoost multi-class classification.  
-- **`xgb_multi_best.ipynb`**: Best XGBoost model for multi-class classification.  
-- **`mlp_multi_hyper_tun.ipynb`**: Hyperparameter tuning for MLP multi-class classification.  
-- **`mlp_multi_best.ipynb`**: Best MLP model for multi-class classification.  
-- **`plot_results.ipynb`**: Visualization of model performance metrics and feature importance.  
-- **`requirements.txt`**: List of dependencies required to run the project.  
-
----  
-## Dependencies  
-  
-The project requires the following Python libraries:  
-  
-- `numpy`  
-- `pandas`  
-- `scikit-learn`  
-- `matplotlib`  
-- `seaborn`  
-- `torch`  
-- `xgboost`  
-- `shap`  
-- `optuna`  
-  
-Install all dependencies using the `requirements.txt` file.  
-
----
-## Contributors  
-
-- **Voulgaris Nikolaos** - [GitHub](https://github.com/NickVoulg02)   
-- **Stamelos Charilaos-Panagiotis** - [GitHub](https://github.com/stamelosxp)
-
----
-## License  
-  
-This project is licensed under the MIT License.
-  
+* **Decoupled Microservice Design:** Rather than embedding the heavy ML model directly into the telemetry agent, the XGBoost model is packaged alongside its `scaler.joblib` and `feature_names.json` artifacts into a highly available, stateless REST API.
 
 
+
+## System Architecture & Design Topology
+
+The architecture utilizes scalable, cloud-native deployment patterns.
+
+
+* **Real-Time Flow Extraction:** A Python-based agent, utilizing Scapy, captures and aggregates network telemetry. It calculates flow metrics (e.g., Bytes/s, Packet Lengths, TCP Flags) in memory. To prevent feedback loops, the agent bypasses internal control-plane traffic on port 8000 (API calls) and port 53 (DNS).
+
+* **Automated Mitigation (IPS):** Stale network flows are evaluated at 5-second intervals. If the ML inference API returns a threat probability of `>= 0.65`, the agent automatically applies a targeted `iptables` DROP policy against the adversarial Source IP, instantly terminating the malicious session.
+
+* **Sidecar Telemetry Agent:** The packet inspection engine is deployed via a Sidecar Pattern directly alongside the target workload within the same Kubernetes Pod. This grants the agent direct access to the pod's isolated network namespace (`eth0`) without requiring over-privileged host-level access.
+
+* **Resource Quotas:** To prevent adversarial traffic from causing node-level resource starvation, strict compute boundaries are enforced. The target workload and sensor are capped, while the API pods are limited to 1000m CPU to guarantee cluster stability.  
+
+* **Synthetic Adversary:** To safely validate the IDPS pipeline, a dedicated intruder pod acts as a penetration testing agent. To prevent this attacker pod from disrupting the ML API or other lateral cluster services, it is bound by a strict Kubernetes NetworkPolicy, that restricts its egress traffic exclusively to the secure-target pod.   
+
+
+
+## Infrastructure as Code (IaC) & Deployment
+
+To ensure the environment is reproducible, all infrastructure provisioning and application deployments are managed through an automated pipeline.
+
+| Component | Technology | Purpose |
+| --- | --- | --- |
+| **Compute** | Azure Kubernetes Service (AKS) | Orchestrates the containerized workloads to comply with strict regional capacity quotas. |
+| **Registry** | Azure Container Registry (ACR) | Secures and distributes the custom container images for the model API and telemetry agent. |
+| **Provisioning** | Bicep (`main.bicep`) | Declaratively provisions the Azure Resource Group, ACR, and AKS, while dynamically assigning `AcrPull` IAM RBAC permissions. |
+| **Orchestration** | Bash (`deploy.sh`) | An automated CI/CD simulation script that deploys the Bicep template, builds the container images, injects dynamic registry URIs into the Kubernetes manifests, and applies the desired cluster state. In an enterprise setting, this script would decouple directly into a GitHub Actions CI pipeline. |
+
+**Repository and Folder Structure:**
+
+* `/api`: Houses the XGBoost artifacts, inference API source code, and its `Dockerfile`.
+* `/sensor`: Contains the `unified_sensor.py` telemetry agent and its `Dockerfile`.
+* `/k8s`: Stores all declarative Kubernetes manifests (`api-deployment.yaml`, `target-pod.yaml`, `intruder-pod.yaml`, `intruder-lockdown.yaml`).
+
+## Adversarial Threat Validation
+
+The IDPS has been rigorously validated against synthetic adversarial traffic originating from an isolated penetration-testing pod. Detailed execution logs and mitigation confirmations are documented in **[ATTACKs.md](ATTACKS.md)**.
+
+
+## Future Improvements
+
+While the current architecture successfully identifies and isolates anomalies, I have some more ideas to implement in the future:
+
+1. **SIEM/SOAR Integration:** Transition the agent's stdout logging to highly structured JSON payloads. Utilizing a log shipper (e.g. Azure Monitor), telemetry will be forwarded to a SIEM (like Azure Sentinel) for advanced threat hunting and automated alerting.
+2. **Dynamic Threshold Calibration:** The current `BLOCK_THRESHOLD` is statically defined at `0.65`. I'd love to introduce an automated baseline calibration phase, allowing the threshold to dynamically adjust based on the standard traffic variance of the protected workload.
