@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: intruder
+  labels:                  
+    app: intruder          
+spec:
+  containers:
+  - name: attacker
+    image: ubuntu:latest
+    command:
+      - /bin/bash
+      - "-c"
+      - |
+        apt-get update
+        apt-get install -y python3 curl hping3 iproute2
+        sleep infinity
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"

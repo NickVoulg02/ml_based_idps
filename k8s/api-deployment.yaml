@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ids-ml-api
+  labels:
+    app: ids-ml-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ids-ml-api
+  template:
+    metadata:
+      labels:
+        app: ids-ml-api
+    spec:
+      containers:
+      - name: api
+        # Replace with your actual ACR server address
+        image: YOUR-ACR-NAME/ids-ml-api:v1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ids-api-service
+spec:
+  type: ClusterIP
+  selector:
+    app: ids-ml-api
+  ports:
+  - port: 8000
+    targetPort: 8000
