@@ -1,0 +1,17 @@
+services:
+  ids-api:
+    build: .
+    container_name: ids-ml-api
+    ports:
+      - "8000:8000"
+    restart: always # Auto-restart if the API crashes or host reboots
+    healthcheck:    # Actively monitor container health
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0' # Prevent DDoS attacks from exhausting host CPU
+          memory: 1G
