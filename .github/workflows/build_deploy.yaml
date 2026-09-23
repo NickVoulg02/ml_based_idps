@@ -1,0 +1,69 @@
+name: Build and Deploy Cloud-Native IDPS
+
+on:
+  push:
+    branches: [ "main" ]
+
+# Required for OIDC Authentication to Azure
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RESOURCE_GROUP: "rg-ids-experiment"
+  LOCATION: "eastus"
+  CLUSTER_NAME: "aks-ids-cluster"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Azure (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy Infrastructure (Bicep)
+        id: bicep
+        run: |
+          az group create --name ${{ env.RESOURCE_GROUP }} --location ${{ env.LOCATION }} -o none
+          
+          ACR_SERVER=$(az deployment group create \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --template-file ./main.bicep \
+            --query properties.outputs.acrLoginServer.value \
+            --output tsv)
+            
+          echo "ACR_SERVER=$ACR_SERVER" >> $GITHUB_ENV
+          echo "ACR_NAME=${ACR_SERVER%%.*}" >> $GITHUB_ENV
+
+      - name: Login to ACR
+        run: az acr login --name ${{ env.ACR_NAME }}
+
+      - name: Build and Push API Image
+        run: |
+          docker build -t ${{ env.ACR_SERVER }}/ids-ml-api:${{ github.sha }} ./api
+          docker push ${{ env.ACR_SERVER }}/ids-ml-api:${{ github.sha }}
+
+      - name: Build and Push Sensor Image
+        run: |
+          docker build -t ${{ env.ACR_SERVER }}/ids-sensor:${{ github.sha }} ./sensor
+          docker push ${{ env.ACR_SERVER }}/ids-sensor:${{ github.sha }}
+
+      - name: Get AKS Credentials
+        run: az aks get-credentials --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }} --overwrite-existing
+
+      - name: Inject Commit SHA & ACR URL, then Deploy
+        run: |
+          for file in ./k8s/*.yaml; do
+            # Replace placeholder ACR name with the dynamic one
+            sed -i "s|YOUR-ACR-NAME|${{ env.ACR_SERVER }}|g" $file
+            # Replace placeholder tags (assuming you change YAMLs to use :REPLACE_ME_TAG)
+            sed -i "s|:v1|:${{ github.sha }}|g" $file
+            kubectl apply -f $file
+          done
