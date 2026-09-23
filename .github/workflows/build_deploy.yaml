@@ -9,6 +9,11 @@ permissions:
   id-token: write
   contents: read
 
+# Ensures only one deployment job runs at a time on the main branch
+concurrency:
+  group: azure-aks-deployment
+  cancel-in-progress: false
+
 env:
   RESOURCE_GROUP: "rg-ids-experiment"
   LOCATION: "eastus"
