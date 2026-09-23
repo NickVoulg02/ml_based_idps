@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: secure-target
+  labels:
+    app: secure-target
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: secure-target
+  template:
+    metadata:
+      labels:
+        app: secure-target
+    spec:
+      containers:
+      # 1. The Target Application
+      - name: target-app
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"
+
+      - name: ids-sensor-sidecar
+        image: YOUR-ACR-NAME/ids-sensor:v1
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          capabilities:
+            add: ["NET_RAW", "NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"

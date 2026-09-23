@@ -5,7 +5,7 @@ This document outlines some of the synthetic attack vectors used to validate the
 ## Prerequisites
 Before launching any attacks, resolve the target's internal Kubernetes IP from the intruder pod's shell:
 ```bash
-export TARGET_IP=$(kubectl get pod secure-target -o jsonpath='{.status.podIP}')
+export TARGET_IP=$(kubectl get pod -l app=secure-target -o jsonpath='{.items[0].status.podIP}')
 
 ```
 
