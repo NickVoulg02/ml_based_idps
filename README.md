@@ -41,14 +41,14 @@ To ensure the environment is reproducible, all infrastructure provisioning and a
 | --- | --- | --- |
 | **Compute** | Azure Kubernetes Service (AKS) | Orchestrates the containerized workloads to comply with strict regional capacity quotas. |
 | **Registry** | Azure Container Registry (ACR) | Secures and distributes the custom container images for the model API and telemetry agent. |
-| **Provisioning** | Bicep (`main.bicep`) | Declaratively provisions the Azure Resource Group, ACR, and AKS, while dynamically assigning `AcrPull` IAM RBAC permissions. |
-| **Orchestration** | Bash (`deploy.sh`) | An automated CI/CD simulation script that deploys the Bicep template, builds the container images, injects dynamic registry URIs into the Kubernetes manifests, and applies the desired cluster state. In an enterprise setting, this script would decouple directly into a GitHub Actions CI pipeline. |
+| **Provisioning** | Bicep (`main.bicep`) | Declaratively provisions the Azure Resource Group, ACR, and AKS, while dynamically assigning IAM RBAC permissions. |
+| **Orchestration** | GitHub Actions (`build_deploy.yaml`) | A fully automated GitOps CI/CD pipeline that provisions infrastructure via OIDC authentication, builds dynamic commit-tagged container images, and deploys the declarative K8s state upon every push to the `main` branch. |
 
 **Repository and Folder Structure:**
 
 * `/api`: Houses the XGBoost artifacts, inference API source code, and its `Dockerfile`.
 * `/sensor`: Contains the `unified_sensor.py` telemetry agent and its `Dockerfile`.
-* `/k8s`: Stores all declarative Kubernetes manifests (`api-deployment.yaml`, `target-pod.yaml`, `intruder-pod.yaml`, `intruder-lockdown.yaml`).
+* `/k8s`: Stores all declarative Kubernetes manifests (`api-deployment.yaml`, `target-deployment.yaml`, `intruder-deployment.yaml`, `intruder-lockdown.yaml`).
 
 ## Adversarial Threat Validation
 
