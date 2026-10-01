@@ -1,19 +1,29 @@
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+
+COPY requirements.txt .
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+COPY . .
+# This generates your model.json artifact
+RUN python xgb_model.py 
+
 FROM python:3.11-slim
 
-# Prevent Python from writing .pyc files and enable unbuffered logging
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy only the installed Python packages from the builder stage
+COPY --from=builder /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
 
-COPY . .
-
-# Run the training script to generate the .json artifacts.
-# Delete the downloaded Kaggle dataset after training 
-RUN python xgb_model.py && rm -rf /root/.cache/kagglehub
+# Copy only the necessary API files and the trained model artifact
+# This leaves behind the training scripts, Kaggle data, and cache
+COPY main.py .
+COPY --from=builder /build/model.json .
 
 EXPOSE 8000
 

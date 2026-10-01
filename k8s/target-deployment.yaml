@@ -17,7 +17,6 @@ spec:
         app: secure-target
     spec:
       containers:
-      # 1. The Target Application
       - name: target-app
         image: nginx:alpine
         ports:
