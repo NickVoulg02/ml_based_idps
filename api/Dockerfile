@@ -23,8 +23,9 @@ ENV PATH=/root/.local/bin:$PATH
 # Copy only the necessary API files and the trained model artifact
 # This leaves behind the training scripts, Kaggle data, and cache
 COPY main.py .
-COPY --from=builder /build/model.json .
-
+COPY --from=builder /build/xgb_model_reduced.json .
+COPY --from=builder /build/scaler.joblib .
+COPY --from=builder /build/feature_names.json .
 EXPOSE 8000
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
