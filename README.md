@@ -1,6 +1,6 @@
 # Cloud-Native Intrusion Detection and Prevention System 
 
-A distributed, machine learning-driven Network Detection and Response (NDR) architecture engineered for Kubernetes. This system leverages a highly optimized XGBoost classifier to analyze L4/L7 network telemetry in real-time, enforcing automated network isolation against volumetric and protocol-layer anomalies.
+A distributed, machine learning-driven Network Detection and Response architecture engineered for Kubernetes. This system leverages a highly optimized XGBoost classifier to analyze network telemetry in real-time, enforcing automated network isolation against volumetric and protocol-layer anomalies.
 
 ---
 
